@@ -234,7 +234,7 @@ public class Peripheral: NSObject, VgcWatchDelegate {
         
         haveOpenStreamsToCentral = true
         
-        connectionAcknowledgementWaitTimeout = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: "gotConnectionAcknowledgementTimeout:", userInfo: nil, repeats: false)
+        connectionAcknowledgementWaitTimeout = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: #selector(Peripheral.gotConnectionAcknowledgementTimeout(_:)), userInfo: nil, repeats: false)
         
         if deviceIsTypeOfBridge() {
             

@@ -139,8 +139,8 @@ public class VgcController: NSObject, NSStreamDelegate, VgcStreamerDelegate, NSN
         // is "set", and the developer is responsible for implementing
         // our version instead of the GCController version:
         // "VgcControllerDidConnectNotification"
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "controllerDidConnect:", name: GCControllerDidConnectNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "controllerDidDisconnect:", name: GCControllerDidDisconnectNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(VgcController.controllerDidConnect(_:)), name: GCControllerDidConnectNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(VgcController.controllerDidDisconnect(_:)), name: GCControllerDidDisconnectNotification, object: nil)
         
         // Kick off publishing the availability of our service
         // if we have a Central function (note, a Bridge has both
@@ -370,7 +370,7 @@ public class VgcController: NSObject, NSStreamDelegate, VgcStreamerDelegate, NSN
                     vgcLogDebug("Removing controller \(controller.deviceInfo.vendorName) from controllers array")
                     VgcController.vgcControllers.removeAtIndex(index)
                 }
-                index++
+                index += 1
             }
             
             vgcLogDebug("After disconnect controller count is \(VgcController.vgcControllers.count)")
@@ -803,7 +803,7 @@ public class VgcController: NSObject, NSStreamDelegate, VgcStreamerDelegate, NSN
                 NSNotificationCenter.defaultCenter().postNotificationName(VgcControllerDidDisconnectNotification, object: controller)
                 return
             }
-            index++
+            index += 1
         }
     }
 
@@ -856,7 +856,7 @@ public class VgcController: NSObject, NSStreamDelegate, VgcStreamerDelegate, NSN
                 vgcLogDebug("Found matching existing controller so disconnecting new controller")
                 return (true, index)
             }
-            index++
+            index += 1
         }
         return (false, -1)
     }
@@ -1786,7 +1786,8 @@ enum EncodingStructError: ErrorType {
     case InvalidSize
 }
 
-func encodeSnapshot<T>(var value: T) -> NSData {
+func encodeSnapshot<T>(passedValue: T) -> NSData {
+    var value = passedValue
     return withUnsafePointer(&value) { p in
         NSData(bytes: p, length: sizeofValue(value))
     }

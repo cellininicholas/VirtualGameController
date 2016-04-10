@@ -404,7 +404,8 @@ public func deviceIsTypeOfBridge() -> Bool {
     internal(set) public var controllerType: ControllerType
     internal(set) public var supportsMotion: Bool
     
-    @objc public init(var deviceUID: String, vendorName: String, attachedToDevice: Bool, profileType: ProfileType, controllerType: ControllerType, supportsMotion: Bool) {
+    @objc public init(deviceUID passedDeviceUID: String, vendorName: String, attachedToDevice: Bool, profileType: ProfileType, controllerType: ControllerType, supportsMotion: Bool) {
+        var deviceUID = passedDeviceUID
         
         // If no deviceUID is specified, auto-generate a UID and store it to provide
         // a persistent way of identifying the peripheral.

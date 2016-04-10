@@ -149,7 +149,7 @@ internal class VgcCentralPublisher: NSObject, NSNetServiceDelegate, NSStreamDele
             streamMatchingTimer = nil
         } else if pendingStreams.count > 0 && streamMatchingTimer == nil {
             vgcLogDebug("Setting matching stream timer")
-            streamMatchingTimer = NSTimer.scheduledTimerWithTimeInterval(VgcManager.maxTimeForMatchingStreams, target: self, selector: "testForMatchingStreams", userInfo: nil, repeats: false)
+            streamMatchingTimer = NSTimer.scheduledTimerWithTimeInterval(VgcManager.maxTimeForMatchingStreams, target: self, selector: #selector(VgcPendingStreamDelegate.testForMatchingStreams), userInfo: nil, repeats: false)
         }
         
     }

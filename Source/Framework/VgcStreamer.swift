@@ -78,8 +78,8 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
     var streamerIsBusy: Bool = false
     var queueRetryTimer: [NSOutputStream: NSTimer] = [:]
     
-    func writeData(var data: NSData, toStream: NSOutputStream) {
-
+    func writeData(passedData: NSData, toStream: NSOutputStream) {
+        var data = passedData
         if VgcManager.appRole == .Peripheral && VgcManager.peripheral == nil {
             vgcLogDebug("Attempt to write without peripheral object setup, exiting")
             return
@@ -103,7 +103,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
             if logging { vgcLogDebug("OutputStream has no space/streamer is busy (Status: \(toStream.streamStatus.rawValue))") }
             if data.length > 0 {
                 dispatch_sync(self.lockQueueWriteData) {
-                    PerformanceVars.messagesQueued++
+                    PerformanceVars.messagesQueued += 1
                     self.dataSendQueue.appendData(data)
                 }
                 
@@ -113,7 +113,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
 
                 if queueRetryTimer[toStream] == nil || !queueRetryTimer[toStream]!.valid {
                     vgcLogDebug("Setting data queue retry timer (Stream: \(toStream))")
-                    queueRetryTimer[toStream] = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "delayedWriteData:", userInfo: ["stream": toStream], repeats: false)
+                    queueRetryTimer[toStream] = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: #selector(VgcStreamer.delayedWriteData(_:)), userInfo: ["stream": toStream], repeats: false)
                 }
 
             }
@@ -210,7 +210,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
             
             while inputStream.hasBytesAvailable {
                 
-                bufferLoops++
+                bufferLoops += 1
                
                 let len = inputStream.read(&buffer, maxLength: buffer.count)
                 
@@ -232,7 +232,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
                 if dataBuffer.length <= headerLength {
                     dataBuffer = NSMutableData()
                     vgcLogError("Streamer received data too short to have a header (\(dataBuffer.length) bytes)")
-                    PerformanceVars.invalidMessages++
+                    PerformanceVars.invalidMessages += 1
                     return
                 }
 
@@ -259,7 +259,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
                         //if timestampDouble < lastTimeStamp { vgcLogDebug("Time problem") }
                         //lastTimeStamp = timestampDouble
                         PerformanceVars.totalTransitTime += transitTime
-                        PerformanceVars.totalTransitTimeMeasurements++
+                        PerformanceVars.totalTransitTimeMeasurements += 1
                         let averageTransitTime = PerformanceVars.totalTransitTime / PerformanceVars.totalTransitTimeMeasurements
                         let aboveAverageTransitTime = transitTime - averageTransitTime
                         let percentageAboveAverage = (averageTransitTime / transitTime) * 100
@@ -271,14 +271,14 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
                     // This shouldn't happen
                     dataBuffer = NSMutableData()
                     vgcLogError("Streamer expected header but found no header identifier (\(dataBuffer.length) bytes)")
-                    PerformanceVars.invalidMessages++
+                    PerformanceVars.invalidMessages += 1
                     return
                 }
                 
                 if expectedLength == 0 {
                     dataBuffer = NSMutableData()
                     vgcLogError("Streamer got expected length of zero")
-                    PerformanceVars.invalidMessages++
+                    PerformanceVars.invalidMessages += 1
                     return
                 }
 
@@ -299,7 +299,7 @@ class VgcStreamer: NSObject, NSNetServiceDelegate, NSStreamDelegate {
                     // Performance testing is about calculating elements received per second
                     // By sending motion data, it can be  compared to expected rates.
                     
-                    PerformanceVars.messagesReceived++
+                    PerformanceVars.messagesReceived += 1
                     
                     if VgcManager.performanceSamplingEnabled {
                         
